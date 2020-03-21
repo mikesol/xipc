@@ -17,7 +17,6 @@ def mod(port):
   return _mod()
 
 class hack:
-  my_port = 8000
   start_port = 8001
   end_port = 8001
   def __init__(self, *scripts: str):
@@ -32,12 +31,12 @@ class hack:
         fn = '.xipc.%d.py' % port
         with open(fn, 'w') as fi:
           fi.write(subprocess.check_output(['python', 'py_server.py', script, str(port)]).decode('utf-8'))
-          subprocess.Popen(['python', fn])# stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL)
+          subprocess.Popen(['python', fn], stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL)
       elif ('%s.js' % script) in dr:
         fn = '.xipc.%d.js' % port
         with open(fn, 'w') as fi:
           fi.write(subprocess.check_output(['python', 'js_server.py', script, str(port)]).decode('utf-8'))
-          subprocess.Popen(['node', fn])# stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL)
+          subprocess.Popen(['node', fn], stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL)
       else:
         raise ValueError("Cannot handle %s" % script)
       setattr(out, script, mod(port))
