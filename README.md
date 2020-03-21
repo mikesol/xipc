@@ -51,8 +51,10 @@ Two values should be the same: { fortune: 'Your name was, is, or will be Mike.' 
 Run:
 
 ```bash
-python prof.py
-node prof.js
+$ python prof.py
+Time in seconds for 1000 additions using sockets: 0.17347383499145508
+Time in seconds for 1000 additions: 0.0
+$ node prof.js
+Time in seconds for 1000 additions using sockets: 0.681
+Time in seconds for 1000 additions: 0
 ```
-
-To see two numbers: first of a thousand ops using sockets, and then of a thousand ops directly in memory. The in-memory will be basically 0, but with sockets it will be around 0.1-0.5 seconds.
