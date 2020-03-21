@@ -30,6 +30,8 @@ Two values should be the same: {'fortune': 'Your name was, is, or will be Mike.'
 
 ## Run JavaScript
 
+**NOTE: Currently broken.**
+
 Check out [`js_calling.js`](./js_calling.js). It uses a library called [`xipc`](./xipc.js), which is in this repo. The top-level function "imports" four modules:
 
 - [`py_called_1`](./py_called_1.py)
