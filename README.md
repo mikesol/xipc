@@ -8,7 +8,6 @@ Create a Python virtualenv and activate it. Then:
 
 ```bash
 npm install
-pip install -r requirements.txt
 ```
 
 ## Run Python

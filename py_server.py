@@ -1,37 +1,29 @@
 import sys
 
 def py_server(module: str, port: int) -> str:
-  return '''import tornado.ioloop
-import tornado.web
-import tornado.escape
-import tornado.ioloop
+  return '''import socket
 import json
 import {module}
 
-class ExecHandler(tornado.web.RequestHandler):
-    SUPPORTED_METHODS = ["POST"]
-    def post(self, fname):
-        body = tornado.escape.json_decode(self.request.body)
-        func = getattr({module}, fname)
-        res = func(*body)
-        self.write(json.dumps(res))
-        self.set_header('Content-Type', 'application/json; charset="utf-8"')
+HOST = '127.0.0.1'  # Standard loopback interface address (localhost)
+PORT = {port}        # Port to listen on (non-privileged ports are > 1023)
 
-class StopHandler(tornado.web.RequestHandler):
-    SUPPORTED_METHODS = ["POST"]
-    def post(self):
-        tornado.ioloop.IOLoop.instance().stop()
-
-def make_app():
-    return tornado.web.Application([
-        (r"/exec/(.+)", ExecHandler),
-        (r"/stop", StopHandler),
-    ])
-
-if __name__ == "__main__":
-    app = make_app()
-    app.listen({port})
-    tornado.ioloop.IOLoop.current().start()
+with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+    s.bind((HOST, PORT))
+    s.listen()
+    conn, addr = s.accept()
+    with conn:
+        while True:
+            ipt = 42
+            data = conn.recv(1 << 16)
+            data = data.decode('utf-8')
+            fn = data.split(';')[0]
+            if fn == '':
+                break
+            body = json.loads(';'.join(data.split(';')[1:]))
+            func = getattr({module}, fn)
+            res = func(*body)
+            conn.sendall(json.dumps(res).encode('utf-8'))
 '''.format(module=module, port=port)
 
 if __name__ == '__main__':
