@@ -1,13 +1,19 @@
 const fs = require('fs');
 const child_process = require('child_process');
+const axios = require('axios');
 
 const xipc = () => ({});
 const mod = port => {
   return new Proxy({}, {
-    get: async function(target, name, receiver) {
-      return function() {
-        const url = 'http://localhost:'+port+'/exec/'+name % (port, name)
-        const { data } = await axios.post(url, arguments);
+    get: function(target, name, receiver) {
+      return async function() {
+        const url = 'http://localhost:'+port+'/exec/'+name;
+        const argz = new Array(arguments.length).fill(null);
+        let i = 0;
+        for (; i < argz.length; i++) {
+          argz[i] = arguments[i];
+        }
+        const { data } = await axios.post(url, argz);
         return data;
       };
     },
@@ -17,7 +23,7 @@ const mod = port => {
   });
 };
 
-const hack = async function () {
+const hack = function () {
   const scripts = arguments;
   return async function (f) {
     const start_port = 8001;
@@ -26,7 +32,8 @@ const hack = async function () {
     const out = xipc();
     const dr = fs.readdirSync('.');
     let i = 0;
-    for(; i < scripts; i++) {
+    for(; i < scripts.length; i++) {
+      const script = scripts[i];
       if (dr.indexOf(script+'.py') !== -1) {
         const fn = '.xipc.'+port+'.py';
         fs.writeFileSync(fn, child_process.execSync('python py_server.py ' + script + ' ' + port));
@@ -41,11 +48,13 @@ const hack = async function () {
       out[script] = mod(port);
       port += 1
     }
-    end_port = port  
+    end_port = port
     try {
       await f(out)
-    } catch {}
-    var i = start_port;
+    } catch (e) {
+      console.log(e);
+    }
+    i = start_port;
     for (; i < end_port; i++) {
       try {
         axios.post('http://localhost:'+i+'/stop');
@@ -54,4 +63,4 @@ const hack = async function () {
   };
 }
 
-module.exports = hack;
+module.exports = { hack: hack };
