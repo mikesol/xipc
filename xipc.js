@@ -3,38 +3,31 @@ const net = require('net');
 const child_process = require('child_process');
 
 const xipc = () => ({});
-const mod = port => {
+const makeClient = port => {
   return new Promise((resolve, reject) => {
     const client = new net.Socket();
     client.connect(port, () => {
-      console.log("RESOLVING");
-      resolve(new Proxy({}, {
-        get: function(target, name, receiver) {
-          console.log("returning fn", name);
-          return function() {
-            console.log("CALLED");
-            const argz = new Array(arguments.length).fill(null);
-            let i = 0;
-            for (; i < argz.length; i++) {
-              argz[i] = arguments[i];
-            }
-            const toWrite = name + ';' + JSON.stringify(argz, 'utf-8');
-            return new Promise((res, rej) => {
-              client.on('data', (d) => {
-                console.log("DATA", d);
-                res(JSON.parse(d.toString('utf-8')));
-              });
-              console.log("IN PROM", toWrite);
-              client.write(Buffer.from(toWrite, 'utf-8'));
-            });  
-          };
-        },
-        set: function(target, name, value, receiver) {
-          throw Exception('Cannot set mod.')
-        }
-      }));
+      resolve(client);
     });
   });
+}
+const mod = client => {
+  return function (name) {
+      return function() {
+        const argz = new Array(arguments.length).fill(null);
+        let i = 0;
+        for (; i < argz.length; i++) {
+          argz[i] = arguments[i];
+        }
+        const toWrite = name + ';' + JSON.stringify(argz, 'utf-8');
+        return new Promise((res, rej) => {
+          client.on('data', (d) => {
+            res(JSON.parse(d.toString('utf-8')));
+          });
+          client.write(Buffer.from(toWrite, 'utf-8'));
+        });  
+      };
+    };
 };
 
 const hack = function () {
@@ -46,7 +39,6 @@ const hack = function () {
     const out = xipc();
     const dr = fs.readdirSync('.');
     let i = 0;
-    console.log("starting loop");
     for(; i < scripts.length; i++) {
       const script = scripts[i];
       if (dr.indexOf(script+'.py') !== -1) {
@@ -60,9 +52,8 @@ const hack = function () {
       } else {
         throw Exception("Cannot handle " + script)
       }
-      console.log("awaiting mod");
-      out[script] = await mod(port);
-      console.log("O", script, out[script]);
+      const client = await makeClient(port);
+      out[script] = mod(client);
       port += 1
     }
     end_port = port
@@ -76,8 +67,10 @@ const hack = function () {
       const client = new net.Socket();
       client.connect(i, () => {
         client.write(';');
+        client.destroy();
       });
-    }
+    };
+    process.exit(0);
   };
 }
 
