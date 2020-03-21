@@ -1,0 +1,6 @@
+.xipc.*.py
+.xipc.*.js
+.venv
+node_modules
+.vscode
+__pycache__
