@@ -45,3 +45,14 @@ Two values should be the same: 3 3
 Two values should be the same: -1 -1
 Two values should be the same: { fortune: 'Your name was, is, or will be Mike.' } { fortune: 'Your name was, is, or will be Mike.' }
 ```
+
+## Profiling
+
+Run:
+
+```bash
+python prof.py
+node prof.js
+```
+
+To see two numbers: first of a thousand ops using sockets, and then of a thousand ops directly in memory. The in-memory will be basically 0, but with sockets it will be around 0.1-0.5 seconds.

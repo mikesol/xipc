@@ -21,9 +21,11 @@ const mod = client => {
         }
         const toWrite = name + ';' + JSON.stringify(argz, 'utf-8');
         return new Promise((res, rej) => {
-          client.on('data', (d) => {
+          let l = (d) => {
             res(JSON.parse(d.toString('utf-8')));
-          });
+            client.removeListener('data', l);
+          };
+          client.on('data', l);
           client.write(Buffer.from(toWrite, 'utf-8'));
         });  
       };
