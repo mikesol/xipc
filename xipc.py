@@ -3,9 +3,27 @@ from dataclasses import dataclass
 from typing import Sequence, Any
 import subprocess
 import requests
+import os
 logger = logging.getLogger(__name__)
 
-def server(module: str, port: int) -> str:
+def js_server(module: str, port: int) -> str:
+  return '''const express = require('express');
+  const bodyParser = require('body-parser');
+  const mymod = require('./{module}');
+  const app = express();
+  let _ = {empty_obj};
+  app.post("/exec/:fname", bodyParser.json(), async (req, res) => {ob}
+    const out = await mymod[req.params.fname].apply(null, req.body);
+    res.json(out);
+  {cb});
+  app.post("/stop", (_, res) => {ob}
+    res.send("");
+    process.exit();
+  {cb});
+  _.server = app.listen({port}, () => {empty_obj});
+'''.format(module=module, port=port, empty_obj='{}', ob='{', cb='}')
+
+def py_server(module: str, port: int) -> str:
   return '''import tornado.ioloop
 import tornado.web
 import tornado.escape
@@ -59,13 +77,22 @@ class hack:
     logger.debug("starting xipc")
     port = self.start_port
     out = xipc()
+    dr = os.listdir('.')
     for script in self._scripts:
-      fn = '.xipc.%d.py' % port
-      with open(fn, 'w') as fi:
-        fi.write(server(script, port))
-        subprocess.Popen(['python', fn], stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL)
-        setattr(out, script, mod(port))
-        port += 1
+      if ('%s.py' % script) in dr:
+        fn = '.xipc.%d.py' % port
+        with open(fn, 'w') as fi:
+          fi.write(py_server(script, port))
+          subprocess.Popen(['python', fn])# stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL)
+      elif ('%s.js' % script) in dr:
+        fn = '.xipc.%d.js' % port
+        with open(fn, 'w') as fi:
+          fi.write(js_server(script, port))
+          subprocess.Popen(['node', fn])# stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL)
+      else:
+        raise ValueError("Cannot handle %s" % script)
+      setattr(out, script, mod(port))
+      port += 1
     self.end_port = port
     return out
   def __exit__(self, type, value, traceback):
