@@ -20,7 +20,7 @@ Check out [`py_calling.py`](./py_calling.py). It uses a library called [`xipc`](
 - [`js_called_1`](./js_called_1.js)
 - [`js_called_2`](./js_called_2.js)
 
-Then, it calls a bunch of functions in these modules. The Python and JavaScript variants of each function return the same results, which you can see from the CLI output.
+Then, it calls functions in these modules. The Python and JavaScript variants of each function return the same results, which you can see from the CLI output.
 
 ```bash
 $ python py_calling.py
