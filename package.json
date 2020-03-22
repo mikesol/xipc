@@ -7,5 +7,8 @@
   "license": "ISC",
   "dependencies": {
     "fs": "0.0.1-security"
+  },
+  "devDependencies": {
+    "prettier": "^2.0.1"
   }
 }
