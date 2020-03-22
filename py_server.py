@@ -1,7 +1,8 @@
 import sys
 
+
 def py_server(module: str, port: int) -> str:
-  return '''import socket
+    return """import socket
 import json
 import {module}
 
@@ -24,7 +25,10 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             func = getattr({module}, fn)
             res = func(*body)
             conn.sendall(json.dumps(res).encode('utf-8'))
-'''.format(module=module, port=port)
+""".format(
+        module=module, port=port
+    )
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     print(py_server(sys.argv[1], int(sys.argv[2])))

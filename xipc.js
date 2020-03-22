@@ -38,7 +38,7 @@ const mod = (client) => {
   );
 };
 
-const hack = function () {
+const xipc = function () {
   const scripts = arguments;
   return async function (f) {
     const start_port = 8001;
@@ -95,4 +95,4 @@ const hack = function () {
   };
 };
 
-module.exports = { hack: hack };
+module.exports = { xipc: xipc };

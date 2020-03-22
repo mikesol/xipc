@@ -1,5 +1,5 @@
-const { hack } = require("./xipc");
-hack(
+const { xipc } = require("./xipc");
+xipc(
   "py_called_1",
   "py_called_2",
   "js_called_1",
