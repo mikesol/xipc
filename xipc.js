@@ -44,6 +44,7 @@ const hack = function () {
     const start_port = 8001;
     let end_port = 8001;
     let port = start_port;
+    const clients = [];
     const out = xipc();
     const dr = fs.readdirSync(".");
     let i = 0;
@@ -76,6 +77,7 @@ const hack = function () {
       }
       const client = await makeClient(port);
       out[script] = mod(client);
+      clients.push(client);
       port += 1;
     }
     end_port = port;
@@ -84,15 +86,12 @@ const hack = function () {
     } catch (e) {
       console.log(e);
     }
-    i = start_port;
-    for (; i < end_port; i++) {
-      const client = new net.Socket();
-      client.connect(i, () => {
-        client.write(";");
-        client.destroy();
-      });
+    i = 0;
+    for (; i < clients.length; i++) {
+      clients[i].write(";");
+      clients[i].destroy();
+      clients[i].unref();
     }
-    process.exit(0);
   };
 };
 
