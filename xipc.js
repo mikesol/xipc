@@ -12,7 +12,8 @@ const makeClient = port => {
   });
 }
 const mod = client => {
-  return function (name) {
+  return new Proxy({}, {
+    get: function (_, name) {
       return function() {
         const argz = new Array(arguments.length).fill(null);
         let i = 0;
@@ -29,8 +30,10 @@ const mod = client => {
           client.write(Buffer.from(toWrite, 'utf-8'));
         });  
       };
-    };
-};
+    },
+    set: function() {}
+})
+  };
 
 const hack = function () {
   const scripts = arguments;
